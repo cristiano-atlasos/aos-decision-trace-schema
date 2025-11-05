@@ -1,0 +1,67 @@
+{
+"$schema": "https://json-schema.org/draft/2020-12/schema",
+"$id": "https://theatlasos.com/schemas/aos-decision-trace/v0.1.json",
+"title": "A/OS DecisionTrace event (v0.1)",
+"type": "object",
+"additionalProperties": false,
+"required": [
+"trace_id",
+"episode_id",
+"decision_id",
+"ts",
+"actor",
+"policy_gate",
+"action",
+"target",
+"result",
+"latency_ms",
+"scope",
+"risk_level",
+"schema_version"
+],
+"properties": {
+"trace_id": {
+"type": "string",
+"format": "uuid",
+"description": "Unique id of this trace record"
+},
+"episode_id": { "type": "string", "minLength": 1 },
+"decision_id": { "type": "string", "minLength": 1 },
+"ts": {
+"type": "string",
+"format": "date-time",
+"description": "Timestamp in UTC (RFC3339)"
+},
+"actor": {
+"type": "object",
+"additionalProperties": false,
+"required": ["type", "id", "role"],
+"properties": {
+"type": { "type": "string", "enum": ["agent", "human", "system"] },
+"id": { "type": "string", "minLength": 1 },
+"role": { "type": "string", "minLength": 1 }
+}
+},
+"policy_gate": { "type": "string", "minLength": 1 },
+"action": { "type": "string", "minLength": 1 },
+"target": { "type": "string", "minLength": 1 },
+"inputs_redacted": {
+"type": "object",
+"description": "Minimal inputs with PII removed"
+},
+"result": { "type": "string", "enum": ["approved", "hold", "blocked"] },
+"latency_ms": { "type": "number", "minimum": 0 },
+"output_hash": {
+"type": "string",
+"description": "sha256 hash of produced output (if any)"
+},
+"scope": { "type": "string", "enum": ["sandbox", "dev", "prod"] },
+"risk_level": { "type": "string", "enum": ["low", "medium", "high"] },
+"tenant_id": { "type": "string" },
+"evidence_uris": {
+"type": "array",
+"items": { "type": "string" }
+},
+"schema_version": { "type": "string", "const": "0.1.0" }
+}
+}
