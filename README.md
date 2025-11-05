@@ -1,4 +1,13 @@
 # A/OS DecisionTrace Schema (v0.1 · draft)
+**Latest:** v0.1.0 (draft) — [release notes](https://github.com/cristiano-atlasos/aos-decision-trace-schema/releases/tag/v0.1.0)
+
+**Spec & examples**
+- JSON Schema: [`schema.json`](./schema.json)
+- NDJSON example: [`examples/example.ndjson`](./examples/example.ndjson)
+
+**Scope**
+Minimal event schema for governed AI decisions (trace_id, episode_id, actor, attempted_action, result, policy_enforced, env, isolation_key, artifacts).
+Portable today on Lovable/Supabase; cloud-agnostic tomorrow. SIEM/GRC exportable.
 
 Minimal event schema for governed AI decisions: a single, append-only record that proves **what acted, under which policy, on what, when, and with what result** — exportable to SIEM/GRC.
 
