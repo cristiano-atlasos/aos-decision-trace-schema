@@ -1,0 +1,59 @@
+{
+"$schema": "https://json-schema.org/draft/2020-12/schema",
+"$id": "https://theatlasos.com/schemas/decision-trace/v0.1",
+"title": "DecisionTrace v0.1",
+"type": "object",
+"additionalProperties": false,
+"required": [
+"trace_id",
+"episode_id",
+"decision_id",
+"ts",
+"actor",
+"policy_gate",
+"action",
+"target",
+"result",
+"schema_version"
+],
+"properties": {
+"trace_id": { "type": "string", "format": "uuid" },
+"episode_id": { "type": "string" },
+"decision_id": { "type": "string" },
+"ts": { "type": "string", "format": "date-time" },
+
+"actor": {
+"type": "object",
+"additionalProperties": false,
+"required": ["type", "id", "role"],
+"properties": {
+"type": { "type": "string", "enum": ["agent", "human", "system"] },
+"id": { "type": "string" },
+"role": { "type": "string" }
+}
+},
+
+"policy_gate": { "type": "string" },
+"action": { "type": "string" },
+"target": { "type": "string" },
+
+"inputs_redacted": {
+"type": "object",
+"additionalProperties": { "type": "string" }
+},
+
+"result": {
+"type": "string",
+"enum": ["approved", "hold", "blocked", "rejected", "pending", "explained", "error"]
+},
+
+"latency_ms": { "type": "number", "minimum": 0 },
+"output_hash": { "type": "string", "pattern": "^sha(1|256|384|512):[A-Fa-f0-9]{16,}$" },
+"scope": { "type": "string", "enum": ["sandbox", "dev", "test", "staging", "prod"] },
+"risk_level": { "type": "string", "enum": ["low", "medium", "high"] },
+"tenant_id": { "type": "string" },
+"evidence_uris": { "type": "array", "items": { "type": "string" } },
+
+"schema_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" }
+}
+}
