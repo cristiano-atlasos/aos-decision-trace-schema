@@ -1,0 +1,38 @@
+name: Validate DecisionTrace examples
+
+on:
+push:
+paths:
+- "schema/**"
+- "examples/**"
+- ".github/workflows/validate.yml"
+pull_request:
+
+jobs:
+validate:
+runs-on: ubuntu-latest
+steps:
+- name: Checkout
+uses: actions/checkout@v4
+
+- name: Setup Node
+uses: actions/setup-node@v4
+with:
+node-version: "20"
+
+- name: Install ajv-cli
+run: npm i -g ajv-cli@5
+
+- name: Validate JSON examples
+shell: bash
+run: |
+shopt -s nullglob
+files=(examples/*.json)
+if [ ${#files[@]} -eq 0 ]; then
+echo "No JSON examples to validate — skipping."
+exit 0
+fi
+ajv validate \
+-s schema/decision-trace.v0_1.json \
+-d "examples/*.json" \
+--strict=false
