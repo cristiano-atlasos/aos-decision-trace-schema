@@ -1,3 +1,7 @@
+[![latest tag](https://img.shields.io/github/v/release/cristiano-atlasos/aos-decision-trace-schema?label=latest%20tag)](https://github.com/cristiano-atlasos/aos-decision-trace-schema/releases)
+[![license: MIT](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
+**Quick links:** [schema.json](./schema/schema.json) • [example.ndjson](./examples/example.ndjson) • [release notes](https://github.com/cristiano-atlasos/aos-decision-trace-schema/releases)
+
 # A/OS DecisionTrace Schema (v0.1 · draft)
 **Latest:** v0.1.0 (draft) — [release notes](https://github.com/cristiano-atlasos/aos-decision-trace-schema/releases/tag/v0.1.0)
 
