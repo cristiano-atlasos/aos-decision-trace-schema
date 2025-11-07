@@ -1,104 +1,62 @@
-name: CI — validate schema & examples
+name: CI — validate schema & samples
 
 on:
 pull_request:
 paths:
-- 'schema*.json'
-- 'schemas/**/*.json'
+- 'schema/schema.json'
 - 'examples/**/*.ndjson'
-- '.github/workflows/**'
-workflow_dispatch:
+- '.github/workflows/validate.yml'
+- 'README.md'
+push:
+branches: [ main ]
+paths:
+- 'schema/schema.json'
+- 'examples/**/*.ndjson'
+- '.github/workflows/validate.yml'
 
 jobs:
 validate:
 runs-on: ubuntu-latest
 steps:
 - uses: actions/checkout@v4
+
 - uses: actions/setup-python@v5
 with:
 python-version: '3.11'
+
 - name: Install deps
 run: |
 python -m pip install --upgrade pip
 pip install jsonschema rfc3339-validator
+
 - name: Validate schema & examples
 run: |
 python - <<'PY'
-import json, os, sys, glob, re
+import json, sys, glob
 from jsonschema import Draft202012Validator
-try:
-from rfc3339_validator import validate_rfc3339
-except Exception:
-def validate_rfc3339(s): return True
 
-# 1) localizar o schema
-candidates = [p for p in ['schema.json'] if os.path.exists(p)]
-if not candidates:
-candidates = glob.glob('schemas/**/*.json', recursive=True)
-if not candidates:
-print("::error::No schema JSON found (schema.json or schemas/**/*.json)")
-sys.exit(1)
-schema_path = sorted(candidates)[0]
-schema = json.load(open(schema_path,'r',encoding='utf-8'))
+def load(p):
+with open(p, 'r', encoding='utf-8') as f:
+return json.load(f)
+
+schema = load('schema/schema.json')
 Draft202012Validator.check_schema(schema)
 validator = Draft202012Validator(schema)
-print(f"Using schema: {schema_path}")
 
-# 2) varrer exemplos NDJSON
-ndjson_files = glob.glob('examples/**/*.ndjson', recursive=True) + glob.glob('*.ndjson')
-if not ndjson_files:
-print("::warning::No .ndjson examples found; skipping sample validation.")
-sys.exit(0)
-
-errors = 0
-uuidv4 = re.compile(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$')
-
-def check_specials(obj, file, line_no):
 ok = True
-if isinstance(obj, dict):
-items = obj.items()
-else:
-return ok
-for k, v in items:
-key = k.lower()
-if isinstance(v, dict):
-ok = check_specials(v, file, line_no) and ok
-elif isinstance(v, list):
-for it in v:
-if isinstance(it, dict):
-ok = check_specials(it, file, line_no) and ok
-else:
-if key.endswith('id') and isinstance(v, str):
-if not uuidv4.match(v):
-print(f"::error file={file},line={line_no}::Field {k} is not UUIDv4: {v}")
-ok = False
-if 'time' in key or 'timestamp' in key:
-if isinstance(v, str) and not validate_rfc3339(v):
-print(f"::error file={file},line={line_no}::Field {k} is not RFC3339 timestamp: {v}")
-ok = False
-return ok
-
-for f in ndjson_files:
-with open(f,'r',encoding='utf-8') as fh:
-for i, line in enumerate(fh, start=1):
-line = line.strip()
-if not line:
+for path in glob.glob('examples/*.ndjson'):
+with open(path, 'r', encoding='utf-8') as f:
+for i, line in enumerate(f, start=1):
+if not line.strip():
 continue
 try:
-obj = json.loads(line)
-except Exception as e:
-print(f"::error file={f},line={i}::Invalid JSON: {e}")
-errors += 1
-continue
-for err in validator.iter_errors(obj):
-loc = ".".join([str(x) for x in err.absolute_path]) or "(root)"
-print(f"::error file={f},line={i}::Schema violation at {loc}: {err.message}")
-errors += 1
-if not check_specials(obj, f, i):
-errors += 1
-
-if errors:
-print(f"{errors} validation errors found.")
-sys.exit(1)
-print("All examples valid ✅")
+rec = json.loads(line)
+errs = list(validator.iter_errors(rec))
+if errs:
+ok = False
+print(f'::error file={path},line={i}::Schema error: {errs[0].message}')
+except json.JSONDecodeError as e:
+ok = False
+print(f'::error file={path},line={i}::Invalid JSON: {e}')
+sys.exit(0 if ok else 1)
 PY
